@@ -36,3 +36,38 @@ class WebDistributor(Distributor):
             'display_name': _('OSTree Web Distributor'),
             'types': [constants.REPOSITORY_TYPE_ID]
         }
+
+    def validate_config(self, repo, config, config_conduit):
+        """
+        Allows the distributor to check the contents of a potential configuration
+        for the given repository. This call is made both for the addition of
+        this distributor to a new repository as well as updating the configuration
+        for this distributor on a previously configured repository. The implementation
+        should use the given repository data to ensure that updating the
+        configuration does not put the repository into an inconsistent state.
+
+        The return is a tuple of the result of the validation (True for success,
+        False for failure) and a message. The message may be None and is unused
+        in the success case. For a failed validation, the message will be
+        communicated to the caller so the plugin should take i18n into
+        consideration when generating the message.
+
+        The related_repos parameter contains a list of other repositories that
+        have a configured distributor of this type. The distributor configurations
+        is found in each repository in the "plugin_configs" field.
+
+        :param repo: metadata describing the repository to which the
+                     configuration applies
+        :type  repo: pulp.plugins.model.Repository
+
+        :param config: plugin configuration instance; the proposed repo
+                       configuration is found within
+        :type  config: pulp.plugins.config.PluginCallConfiguration
+
+        :param config_conduit: Configuration Conduit;
+        :type  config_conduit: pulp.plugins.conduits.repo_config.RepoConfigConduit
+
+        :return: tuple of (bool, str) to describe the result
+        :rtype:  tuple
+        """
+        return True, ''
