@@ -12,8 +12,16 @@ from pulp_ostree.common import constants
 d = _('if "true", on each successful sync the repository will automatically be '
       'published; if "false" content will only be available after manually publishing '
       'the repository; defaults to "true"')
-OPT_AUTO_PUBLISH = PulpCliOption('--auto-publish', d, required=False,
-                                 parse_func=parsers.parse_boolean)
+
+OPT_AUTO_PUBLISH = PulpCliOption(
+    '--auto-publish', d, required=False, parse_func=parsers.parse_boolean)
+
+
+IMPORTER_CONFIGURATION_FLAGS = dict(
+    include_ssl=False,
+    include_sync=True,
+    include_unit_policy=False
+)
 
 
 class CreateOSTreeRepositoryCommand(CreateAndConfigureRepositoryCommand, ImporterConfigMixin):
@@ -24,8 +32,7 @@ class CreateOSTreeRepositoryCommand(CreateAndConfigureRepositoryCommand, Importe
 
     def __init__(self, context):
         CreateAndConfigureRepositoryCommand.__init__(self, context)
-        ImporterConfigMixin.__init__(self, include_ssl=False, include_sync=True,
-                                     include_unit_policy=False)
+        ImporterConfigMixin.__init__(self, **IMPORTER_CONFIGURATION_FLAGS)
         self.add_option(OPT_AUTO_PUBLISH)
 
     def _describe_distributors(self, user_input):
@@ -43,32 +50,31 @@ class CreateOSTreeRepositoryCommand(CreateAndConfigureRepositoryCommand, Importe
         """
         auto_publish = user_input.get(OPT_AUTO_PUBLISH.keyword, True)
 
-        options = [
+        distributors = [
             dict(distributor_type_id=constants.WEB_DISTRIBUTOR_TYPE_ID,
                  distributor_config={},
                  auto_publish=auto_publish,
                  distributor_id=constants.WEB_DISTRIBUTOR_TYPE_ID),
         ]
 
-        return options
+        return distributors
 
 
 class UpdateOSTreeRepositoryCommand(UpdateRepositoryCommand, ImporterConfigMixin):
 
     def __init__(self, context):
         UpdateRepositoryCommand.__init__(self, context)
-        ImporterConfigMixin.__init__(self, include_ssl=False, include_sync=True,
-                                     include_unit_policy=False)
+        ImporterConfigMixin.__init__(self, **IMPORTER_CONFIGURATION_FLAGS)
         self.add_option(OPT_AUTO_PUBLISH)
 
     def run(self, **kwargs):
-        dist_config = {}
+        web_config = {}
 
-        value = kwargs.pop(OPT_AUTO_PUBLISH.keyword, None)
-        if value is not None:
-            dist_config['auto_publish'] = value
+        auto_publish = kwargs.pop(OPT_AUTO_PUBLISH.keyword, None)
+        if auto_publish:
+            dist_config[constants.AUTO_PUBLISH] = value
 
         if dist_config:
-            kwargs['distributor_configs'][constants.WEB_DISTRIBUTOR_TYPE_ID] = dist_config
+        kwargs['distributor_configs'][constants.WEB_DISTRIBUTOR_TYPE_ID] = dist_config
 
         super(UpdateOSTreeRepositoryCommand, self).run(**kwargs)

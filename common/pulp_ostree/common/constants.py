@@ -8,3 +8,6 @@ WEB_DISTRIBUTOR_TYPE_ID = 'ostree_web_distributor'
 
 # platform
 REPO_NOTE_OSTREE = 'ostree_repository'
+
+# options
+AUTO_PUBLISH = 'auto_publish'
